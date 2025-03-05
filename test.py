@@ -1,23 +1,36 @@
 import io
 from game import Result, ChoiceFactory, BigBangGame
+from game import Choice, Rock, Paper, Scissors, Lizard, Spock
 
-class Testing():
+class TestFactory():
     factory = ChoiceFactory()
 
     def test_factory(self):
+        """ Tests the factory of choices """
+
         choice = self.factory.create("rock")
+        assert choice.is_rock()
+        choice = self.factory.create("Rock")
         assert choice.is_rock()
 
         choice = self.factory.create("paper")
         assert choice.is_paper()
+        choice = self.factory.create("Paper")
+        assert choice.is_paper()
 
         choice = self.factory.create("scissors")
+        assert choice.is_scissors()
+        choice = self.factory.create("Scissors")
         assert choice.is_scissors()
 
         choice = self.factory.create("lizard")
         assert choice.is_lizard()
+        choice = self.factory.create("Lizard")
+        assert choice.is_lizard()
 
         choice = self.factory.create("spock")
+        assert choice.is_spock()
+        choice = self.factory.create("Spock")
         assert choice.is_spock()
 
         choice = self.factory.create("invalid")
@@ -78,38 +91,73 @@ class Testing():
         self.create_test("spock", "lizard", Result.Lost)
         self.create_test("spock", "spock", Result.Tie)
 
-    def test_game(self, monkeypatch):
+class TestGame():
+    game = BigBangGame()
+
+    def setUp(self):
+        """ Creates a new game at the beginning of every test """
+        self.game = BigBangGame()
+
+    def check_read_input(self, monkeypatch, choice_input: str, expected_result: str):
+        """ Checks the read_input method given the choice_input in stdin.
+
+            :param monkeypatch: it's used to pass stdin input
+            :param choice_input: the choice of a player
+            :param expected_result: the expected result of read_input method
+        """
+        monkeypatch.setattr('sys.stdin', io.StringIO(choice_input))
+        assert self.game.read_input("Player") == expected_result
+
+    def test_read_input(self, monkeypatch):
         """ Tests different inputs for read_input method """
 
-        monkeypatch.setattr('sys.stdin', io.StringIO('paper'))
-        game = BigBangGame()
-        assert game.read_input("Player") == "paper"
+        self.check_read_input(monkeypatch, "paper", "paper")
+        self.check_read_input(monkeypatch, "Paper", "Paper")
 
-        monkeypatch.setattr('sys.stdin', io.StringIO('rock'))
-        game = BigBangGame()
-        assert game.read_input("Player") == "rock"
+        self.check_read_input(monkeypatch, "rock", "rock")
+        self.check_read_input(monkeypatch, "Rock", "Rock")
 
-        monkeypatch.setattr('sys.stdin', io.StringIO('scissors'))
-        game = BigBangGame()
-        assert game.read_input("Player") == "scissors"
+        self.check_read_input(monkeypatch, "scissors", "scissors")
+        self.check_read_input(monkeypatch, "Scissors", "Scissors")
 
-        monkeypatch.setattr('sys.stdin', io.StringIO('lizard'))
-        game = BigBangGame()
-        assert game.read_input("Player") == "lizard"
+        self.check_read_input(monkeypatch, "lizard", "lizard")
+        self.check_read_input(monkeypatch, "Lizard", "Lizard")
 
-        monkeypatch.setattr('sys.stdin', io.StringIO('spock'))
-        game = BigBangGame()
-        assert game.read_input("Player") == "spock"
+        self.check_read_input(monkeypatch, "spock", "spock")
+        self.check_read_input(monkeypatch, "Spock", "Spock")
 
-        monkeypatch.setattr('sys.stdin', io.StringIO('invalid'))
-        game = BigBangGame()
-        assert game.read_input("Player") == ""
+        self.check_read_input(monkeypatch, "invalid", "")
 
-        monkeypatch.setattr('sys.stdin', io.StringIO('restart'))
-        game = BigBangGame()
-        assert game.read_input("Player") == ""
+        self.game.score1 = 2
+        self.game.score2 = 3
+        self.check_read_input(monkeypatch, "restart", "")
+        assert self.game.score1 == 0
+        assert self.game.score2 == 0
 
-        monkeypatch.setattr('sys.stdin', io.StringIO('score'))
-        game = BigBangGame()
-        assert game.read_input("Player") == ""
+        self.check_read_input(monkeypatch, "score", "")
+
+    def check_calculate_scores(self, choice1, choice2, expected_result,
+        expected_score1, expected_score2):
+        """ Checks the results of the calculate_scores method.
+
+            :param choice1: the choice of the 1st player
+            :param choice2: the choice of the 2nd player
+            :param expected_result: the expected result of calculate_scores method
+        """
+        assert self.game.calculate_scores(choice1, choice2) == expected_result
+        assert self.game.score1 == expected_score1
+        assert self.game.score2 == expected_score2
+
+    def test_calculate_scores(self):
+        """ Tests check_calculate_scores method. Not all the possible
+            combinations need to be checked here as they've been checked
+            for the wins method, which is called in calculate_scores.
+        """
+        self.check_calculate_scores(Rock(), Rock(), True, 0, 0)
+
+        self.check_calculate_scores(Rock(), Paper(), True, 0, 1)
+
+        self.check_calculate_scores(Paper(), Scissors(), True, 0, 2)
+
+        self.check_calculate_scores(Choice(), Paper(), False, 0, 2)
 

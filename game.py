@@ -131,7 +131,7 @@ class ChoiceFactory:
 
             :param choice: The user's choice.
             :return: the right Choice object based on
-                    the given choice_str.
+                     the given choice_str.
         """
         match choice:
             case "Rock" | "rock":
@@ -150,10 +150,11 @@ class ChoiceFactory:
 class BigBangGame:
     """ The big bang game class """
 
-    # Score for player1
-    score1 = 0
-    # Score for player2
-    score2 = 0
+    def __init__(self):
+        # Score for player1
+        self.score1 = 0
+        # Score for player2
+        self.score2 = 0
 
     def read_input(self, player_num: str) -> str:
         """ Reads the stdin input.
@@ -161,7 +162,9 @@ class BigBangGame:
             :return: The given choice string if input was
                      valid. Empty string otherwise.
         """
-        prompt = player_num + " choice (paper, rock, scissors, lizard, spock, restart, score): "
+        prompt = player_num + \
+            " choice (paper, rock, scissors, " + \
+            "lizard, spock, restart, score): "
         choice = input(prompt)
 
         if "restart" == choice:
@@ -174,19 +177,42 @@ class BigBangGame:
             self.print_score()
             return ""
 
-        print("CHOICE: ", choice)
-        if choice != "paper" and \
-            choice != "rock" and \
-            choice != "scissors" and \
-            choice != "lizard" and \
-            choice != "spock":
+        if choice != "paper" and choice != "Paper" and \
+            choice != "rock" and  choice != "Rock" and \
+            choice != "scissors" and  choice != "Scissors" and \
+            choice != "lizard" and  choice != "Lizard" and \
+            choice != "spock" and  choice != "Spock":
             print("Invalid choice. Try again.\n")
             return ""
 
         return choice
 
+    def calculate_scores(self, choice1, choice2) -> bool:
+        """ Calculates the scores based on the given choices.
+
+            :param choice1: the choice of the first player
+            :param choice2: the choice of the second player
+            :return: True for valid result. False otherwise.
+        """
+        result = choice1.wins(choice2)
+        match result:
+            case Result.Tie:
+                print("It's a tie")
+            case Result.Won:
+                print("Player1 won")
+                self.score1 += 1
+            case Result.Lost:
+                print("Player2 won")
+                self.score2 += 1
+            case _:
+                print("Invalid result. Shouldn't get here")
+                return False
+
+        return True
+
     def play(self):
-        """ Plays the game """
+        """ Plays the game.
+        """
 
         # Handle SIGINT, so the program can exit gracefull
         # when Ctrl-C is given.
@@ -206,21 +232,9 @@ class BigBangGame:
             if choice1 is None or choice2 is None:
                 continue
 
-            result = choice1.wins(choice2)
-            match result:
-                case Result.Tie:
-                    print("It's a tie")
-                    self.score1 += 1
-                    self.score2 += 1
-                case Result.Won:
-                    print("Player1 won")
-                    self.score1 += 1
-                case Result.Lost:
-                    print("Player2 won")
-                    self.score2 += 1
-                case _:
-                    print("Invalid result. Shouldn't get here")
-                    break
+            if not self.calculate_scores(choice1, choice2):
+                break
+
             self.print_score()
 
     def print_score(self):
