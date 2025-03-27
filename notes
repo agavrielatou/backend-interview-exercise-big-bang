@@ -1,0 +1,26 @@
+Author: Anna Gavrielatou for interview purposes
+-----------------------------------------------
+
+Design
+------
+The factory object oriented pattern has been used
+for this implementation in order to create different
+types of Choices (e.g. Paper, Rock, etc). Using that
+pattern, the design is reusable and extensible without
+repetitions. The rules of the game as described in
+the exercise have been applied into the code.
+
+Unit tests for the classes and the functions have
+been added.
+
+Run it
+------
+python3 paper_rock.py
+
+Stop it
+-------
+Ctrl-C
+
+Run unit tests
+--------------
+pytest test.py
